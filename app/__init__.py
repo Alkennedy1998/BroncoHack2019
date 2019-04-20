@@ -56,9 +56,7 @@ def getDOLCountryData(country):
 
 def getILOFatalityPercentData(country):
 	data = 0
-	
-    if (country == "United States of America"):
-        country = "United States"
+	country = "United States" if country == "United States of America" else country
 
 	with open('ILOSTAT_.csv') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=',')
