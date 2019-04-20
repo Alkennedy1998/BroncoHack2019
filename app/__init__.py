@@ -269,7 +269,7 @@ def isSameCompany(c1, c2):
 
 def getIVAData(company):
     data = []
-    with open('../iva_factors.csv') as csv_file:
+    with open('iva_factors.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
             if (isSameCompany(company, row[0])):
