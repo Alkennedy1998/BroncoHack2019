@@ -187,23 +187,28 @@ def barcode_To_Product_Name(barcode):
     headers = {
         'content-type': "application/json",
         'cache-control': "no-cache",
-        'postman-token': "086bec25-38af-53a8-6054-4c6184e3965e"
     }
 
+  
+    
     response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
-
+    print(response.text)
     #product_data_object = json.loads(test_data_JSON())
-    try:
-        product_data_object = json.loads(response.text)
-    except:
-        x=0
 
-    product_name = product_data_object['products'][0]['manufacturer']
+    if(response.status_code == 404):
+        print("NO Response")
+        return("NULL")
+    else:
+        product_data_object = json.loads(response.text)
+        product_name = product_data_object['products'][0]['manufacturer']
+        return(product_name)
+
+
+    
 
     #remove when using API 
     #return(test_function())
 
-    return(product_name)
 
 def getNewsWeekScore(company_name):
     url = "https://www.newsweek.com/top-500-global-companies-green-rankings-2017-18"
