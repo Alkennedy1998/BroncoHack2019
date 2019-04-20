@@ -57,7 +57,7 @@ def getDOLCountryData(country):
 def getILOFatalityPercentData(country):
 	data = 0
 	
-	with open('../ILOSTAT_.csv') as csv_file:
+	with open('ILOSTAT_.csv') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=',')
 		found = False
 		for row in csv_reader:
@@ -71,7 +71,7 @@ def getILOFatalityPercentData(country):
 	return 0
 					
 def getEPIScore(country):
-	with open('../EPI_DATA.csv') as csv_file:
+	with open('EPI_DATA.csv') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=',')
 		columns = True
 		for row in csv_reader:
@@ -284,7 +284,7 @@ def getIVAData(company):
     return "NULL"
 
 def getCountryOfOrigin(company):
-    with open('../company_info.csv') as csv_file:
+    with open('company_info.csv') as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=';')
         for row in csv_reader:
             if (isSameCompany(company, row[1])):
