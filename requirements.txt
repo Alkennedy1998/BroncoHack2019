@@ -43,7 +43,6 @@ service-identity==16.0.0
 simplejson==3.13.2
 six==1.11.0
 soupsieve==1.9.1
-ssh-import-id==5.7
 systemd-python==234
 Twisted==17.9.0
 ufw==0.35
