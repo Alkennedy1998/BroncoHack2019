@@ -57,6 +57,9 @@ def getDOLCountryData(country):
 def getILOFatalityPercentData(country):
 	data = 0
 	
+    if (country == "United States of America"):
+        country = "United States"
+
 	with open('ILOSTAT_.csv') as csv_file:
 		csv_reader = csv.reader(csv_file, delimiter=',')
 		found = False
@@ -180,7 +183,7 @@ def barcode_To_Product_Name(barcode):
 
     url = "https://api.barcodelookup.com/v2/products"
 
-    querystring = {"barcode":barcode,"key":"s8s1y69twcpt5wwqtcszuljagdxaa7"}
+    querystring = {"barcode":barcode,"key":"m6jo0kxl0vbgmvxcoremm2a3e00web"}
 
     payload = "{\n\t\"testGreeting\": \"hello\"\n}"
     headers = {
