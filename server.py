@@ -346,8 +346,10 @@ def productInfo(name):
     carterScores[2] = float(carterScores[2])
     carterScores[3] = float(carterScores[3])
 
+    #THE ALGIRITIHHIHIMSMSMMSS
     productInfo["laborScore"] = (carterScores[2]*10)-(15*productInfo["DOLdata"])-productInfo["ILOFatalityPercentage"]
     productInfo["environmentScore"] = ((carterScores[1]*10)+productInfo["EPIScore"]+carterScores[0])/3
+
     return(json.dumps(productInfo))
 
 
@@ -360,7 +362,7 @@ def index():
         ank = "NULL"
 
     companyInfo.name = "Coca-Cola"
-    companyInfo.environmentScore = "63.2"
+    companyInfo.environmentScore = "73.2"
     companyInfo.rank = "70/100"
     return jsonify(name = companyInfo.name,environmentScore = companyInfo.environmentScore, rank = companyInfo.rank)
     #return "Hellooooo"
