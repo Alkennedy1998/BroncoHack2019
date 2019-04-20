@@ -1,14 +1,87 @@
+from lxml import html
 from flask import Flask
 from flask import jsonify
 import json
 import requests
+#from lxml import html
+import csv
+from bs4 import BeautifulSoup
+
 
 app = Flask(__name__)
 
 
+def getCountryScores(country):
+	labourTypes = getDOLCountryData(country)
+	fatalityRate = getILOFatalityPercentData(country)
+	epiScore = getEPIScore(country)
+	
+	fatalityRate = float(fatalityRate)
+	epiScore = float(epiScore)
+	
+	overall = epiScore - fatalityRate
+	if (labourTypes != []):
+		overall -= 10
+	
+	scores = [overall, epiScore, fatalityRate, labourTypes]
+	
+	#print (scores)
+	
+	return scores
+	
+
+def getDOLCountryData(country):
+	web = requests.get('https://www.dol.gov/agencies/ilab/reports/child-labor/list-of-goods?items_per_page=All&combine=')
+	page = html.fromstring(web.content)
+	
+	data = []
+	
+	countries = page.xpath('//div[@class="table-responsive"]/table/tbody/tr')
+	
+	for elem in countries:
+		name_data = elem.xpath('./td[@class="views-field views-field-name-1"]/a')
+		if name_data == []:
+			name_data = elem.xpath('./td[@class="views-field views-field-name-1"]')
+		
+		product_data = elem.xpath('./td[@class="views-field views-field-name"]')
+		labor_data = elem.xpath('./td[@class="views-field views-field-field-exploitation-type-group"]')
+		
+		name = name_data[0].text.strip()
+		product = product_data[0].text.strip()
+		labor = labor_data[0].text.strip()
+		if (name == country):
+			data.append((product, labor))
+	
+	return data
+
+def getILOFatalityPercentData(country):
+	data = 0
+	
+	with open('ILOSTAT_.csv') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=',')
+		found = False
+		for row in csv_reader:
+			if (row[3] == country):
+				if (row[8] == 'SEX_T' and row[11] == 'Status: Total'):
+					data = row[21]
+					found = True
+			elif (found):
+				return data
+		
+	return data
+					
+def getEPIScore(country):
+	with open('EPI_DATA.csv') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=',')
+		columns = True
+		for row in csv_reader:
+			if (row[2] == country):
+				return row[10]
+				
+	return "NULL"
 
 
-def test_function():
+def test_data_JSON():
     API_RETURN = {
     "products": [
         {
@@ -100,9 +173,8 @@ def test_function():
         text = ""
 
     response.text = json.dumps(API_RETURN)
-    product_data_object = json.loads(response.text)
 
-    return(product_data_object['products'][0]['manufacturer'])
+    return(response.text)
  
 
 
@@ -121,21 +193,56 @@ def barcode_To_Product_Name(barcode):
         'postman-token': "086bec25-38af-53a8-6054-4c6184e3965e"
     }
 
-   #response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
-    poduct_data_object = json.loads(response.text)
+    #response = requests.request("GET", url, data=payload, headers=headers, params=querystring)
+
+    product_data_object = json.loads(test_data_JSON())
+    #poduct_data_object = json.loads(response.text)
 
     product_name = product_data_object['products'][0]['manufacturer']
+
+    #remove when using API 
+    #return(test_function())
 
     return(product_name)
 
 
 
-print(test_function())
-
-
 @app.route("/product_name")
-def home():
+def product_name():
     return test_function()
+
+@app.route("/productInfo")
+def productInfo():
+    
+    productInfo = {
+        "barcode":"NULL",
+        "product_name":"NULL",
+        "country":"NULL",
+        "DOLdata":"NULL",
+        "ILOFatalityPercentage":"NULL",
+        "EPIScore":"NULL",
+        "carterScores":"NULL"
+
+    }
+
+    productInfo["country"] = "India"
+
+    #Get name of product
+    productInfo["product_name"] = barcode_To_Product_Name(productInfo["barcode"])
+
+    #Get data from the department of labor website
+    #productInfo["DOLdata"] = getDOLCountryData(productInfo["country"])
+
+    #Get data from the international labor organization
+    productInfo["ILOFatalityPercentage"] = getILOFatalityPercentData(productInfo["country"])
+    #Get environmental performance index 
+    productInfo["EPIScore" ] = getEPIScore(productInfo["country"])
+
+    productInfo["carterScores"] = getCompanyScores(productInfo["product_name"])
+
+    return(productInfo)
+
+
 
 @app.route("/index")
 def index():
@@ -150,6 +257,75 @@ def index():
     companyInfo.rank = "70/100"
     return jsonify(name = companyInfo.name,environmentScore = companyInfo.environmentScore, rank = companyInfo.rank)
     #return "Hellooooo"
+
+def getNewsWeekScore(company_name):
+    url = "https://www.newsweek.com/top-500-global-companies-green-rankings-2017-18"
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'}
+    req = requests.get(url, headers=headers)
+    the_page = req.text
+    odd = []
+    even = []
+    soup = BeautifulSoup(the_page,features="lxml")
+
+    odd = soup.find_all('tr',attrs={'class':'odd'})
+
+    for company in odd:
+        company_odd = company.find('td',attrs={'class':'col3 rank-company'})
+        if company_odd.find('a').text == company_name:
+            score = company.find('td',attrs={'class':'col2 rank-newsweek-green-score'})
+            gics = company.find('td',attrs={'class':'col5 rank-gics-sector'})
+
+            print(score.find('a').text)
+
+            print(gics.find('a').text)
+
+            even = soup.find_all('tr',attrs={'class':'even'})
+
+            for company in even:
+                company_even = company.find('td',attrs={'class':'col3 rank-company'})
+                if company_even.find('a').text == company_name:
+                    score = company.find('td',attrs={'class':'col2 rank-newsweek-green-score'})
+                    gics = company.find('td',attrs={'class':'col5 rank-gics-sector'})
+                    print(score.find('a').text)
+                    print(gics.find('a').text)
+        else:
+            score = "NULL"
+    return score
+
+def getIVAData(company):
+	data = []
+	with open('iva_factors.csv') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=';')
+		for row in csv_reader:
+			if (company.upper() in row[0].upper()):
+				data.append(row[11])#Weighted Industry score
+				data.append(row[13])#Environmental score
+				data.append(row[14])#Environmental weight
+				data.append(row[15])#Social score
+				data.append(row[16])#Social weight
+				data.append(row[17])#Governance score
+				data.append(row[18])#Governance weight
+				return data
+            
+	return data
+
+def getCountryOfOrigin(company):
+	with open('company_info.csv') as csv_file:
+		csv_reader = csv.reader(csv_file, delimiter=';')
+		for row in csv_reader:
+			if (company.upper() in row[1].upper()):
+				return row[3]
+
+def getCompanyScores(company_name):
+    score = getNewsWeekScore(company_name)
+    data = getIVAData(company_name)
+
+    #Fill data array if missing entries
+    if len(data) < 7:
+        data = data + ['NULL'] * (7 - len(data))
+
+    toReturn = [score, data[1], data[2], data[3], data[4], data[5], data[6]]
+    return toReturn
 
 if __name__ == "__main__":
     app.run(debug=True)
