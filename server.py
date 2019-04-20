@@ -133,7 +133,7 @@ def barcode_To_Product_Name(barcode):
 print(test_function())
 
 
-@app.route("/")
+@app.route("/product_name")
 def home():
     return test_function()
 
