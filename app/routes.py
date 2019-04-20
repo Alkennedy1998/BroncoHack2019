@@ -12,7 +12,7 @@ def index():
         ank = "NULL"
 
     companyInfo.name = "Coca-Cola"
-    companyInfo.environmentScore = "63.2"
+    companyInfo.environmentScore = "63.8787777777"
     companyInfo.rank = "70/100"
     return jsonify(name = companyInfo.name,environmentScore = companyInfo.environmentScore, rank = companyInfo.rank)
     #return "Hellooooo"
