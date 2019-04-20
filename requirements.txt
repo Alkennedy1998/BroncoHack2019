@@ -26,7 +26,6 @@ keyrings.alt==3.0
 lxml==4.3.3
 MarkupSafe==1.0
 oauthlib==2.0.6
-PAM==0.4.2
 pyasn1==0.4.2
 pyasn1-modules==0.2.1
 pycrypto==2.6.1
