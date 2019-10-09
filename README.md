@@ -1,2 +1,2 @@
 # BroncoHack2019
-hi it's yuya helping
+All code for 2019 BroncoHack Goodbuys - Augmented Reality Ethical Product Recommender
